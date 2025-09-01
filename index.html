@@ -13,16 +13,33 @@
     html { scroll-behavior: smooth; }
   </style>
 </head>
- <script>
+<script>
   window.addEventListener('load', function() {
     setTimeout(function() {
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: 'smooth'
-      });
-    }, 2000); // 2000 ms = 2 seconden
+      const start = window.scrollY;
+      const end = document.body.scrollHeight;
+      const duration = 5000; // duur in ms (5 seconden)
+      const startTime = performance.now();
+
+      function animateScroll(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1); // 0 -> 1
+        const ease = progress < 0.5 
+          ? 2 * progress * progress 
+          : -1 + (4 - 2 * progress) * progress; // easing
+
+        window.scrollTo(0, start + (end - start) * ease);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        }
+      }
+
+      requestAnimationFrame(animateScroll);
+    }, 2000); // 2 seconden delay
   });
 </script>
+
 
 
 <body class="bg-gray-50 text-gray-800">
