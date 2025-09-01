@@ -13,14 +13,17 @@
     html { scroll-behavior: smooth; }
   </style>
 </head>
-  <script>
+ <script>
   window.addEventListener('load', function() {
-    // Scroll naar de tabel-container
-    document.querySelector('table').scrollIntoView({ 
-      behavior: 'smooth'   // zorgt voor vloeiend scrollen
-    });
+    setTimeout(function() {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+      });
+    }, 2000); // 2000 ms = 2 seconden
   });
 </script>
+
 
 <body class="bg-gray-50 text-gray-800">
   <header class="py-6 flex justify-center">
