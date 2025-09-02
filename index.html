@@ -9,70 +9,47 @@
   <!-- General Sans font -->
   <link href="https://fonts.googleapis.com/css2?family=General+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'General Sans', sans-serif; }
-    html { scroll-behavior: smooth; }
+    body { font-family: 'General Sans', sans-serif; margin: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    header { padding: 0.5rem 0; }
+    header img { height: 60px; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    table td, table th { padding: 0.3rem 0.5rem; font-size: 0.9rem; }
+    table th { background: #f3f4f6; font-weight: 600; }
+    main { height: calc(100vh - 100px); display: flex; flex-direction: column; justify-content: flex-start; }
   </style>
 </head>
-<script>
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      const start = window.scrollY;
-      const end = document.body.scrollHeight;
-      const duration = 10000; // duur in ms (5 seconden)
-      const startTime = performance.now();
-
-      function animateScroll(time) {
-        const elapsed = time - startTime;
-        const progress = Math.min(elapsed / duration, 1); // 0 -> 1
-        const ease = progress < 0.5 
-          ? 2 * progress * progress 
-          : -1 + (4 - 2 * progress) * progress; // easing
-
-        window.scrollTo(0, start + (end - start) * ease);
-
-        if (progress < 1) {
-          requestAnimationFrame(animateScroll);
-        }
-      }
-
-      requestAnimationFrame(animateScroll);
-    }, 2000); // 2 seconden delay
-  });
-</script>
-
-
-
 <body class="bg-gray-50 text-gray-800">
-  <header class="py-6 flex justify-center">
-   <img src="logo.svg" alt="School logo" class="h-24 w-auto">
+  <header class="flex justify-center">
+    <img src="logo.svg" alt="School logo">
   </header>
 
   <main class="max-w-4xl mx-auto px-4">
-    <h1 class="text-3xl font-semibold text-center mb-6">Vrije dagen BS Het Park</h1>
+    <h1 class="text-center font-semibold">Vrije dagen BS Het Park</h1>
 
-    <div class="overflow-x-auto bg-white rounded-2xl shadow">
+    <div class="bg-white rounded-xl shadow">
       <table class="w-full border-collapse">
-        <thead class="bg-gray-100">
+        <thead>
           <tr>
-            <th class="px-4 py-3 text-left font-medium">Datum</th>
-            <th class="px-4 py-3 text-left font-medium">Omschrijving</th>
+            <th class="text-left">Datum</th>
+            <th class="text-left">Omschrijving</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="border-t"><td class="px-4 py-3">24/9/2025</td><td class="px-4 py-3">Pedagogische studiedag</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">10/10/2025</td><td class="px-4 py-3">Facultatieve verlofdag</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">27/10 – 2/11/2025</td><td class="px-4 py-3">Herfstvakantie</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">11/11/2025</td><td class="px-4 py-3">Wapenstilstand</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">3/12/2025</td><td class="px-4 py-3">Pedagogische studiedag</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">22/12/2025 – 4/1/2026</td><td class="px-4 py-3">Kerstvakantie</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">16/2 – 22/2/2026</td><td class="px-4 py-3">Krokusvakantie</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">6/4 – 19/4/2026</td><td class="px-4 py-3">Paasvakantie</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">1/5/2026</td><td class="px-4 py-3">Dag van de Arbeid</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">13/5/2026</td><td class="px-4 py-3">Pedagogische studiedag</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">14/5 – 15/5/2026</td><td class="px-4 py-3">Hemelvaart</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">25/5/2026</td><td class="px-4 py-3">Pinkstermaandag</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">1/6/2026</td><td class="px-4 py-3">Facultatieve verlofdag</td></tr>
-          <tr class="border-t"><td class="px-4 py-3">1/7 – 31/8/2026</td><td class="px-4 py-3">Zomervakantie</td></tr>
+          <tr class="border-t"><td>24/9/2025</td><td>Pedagogische studiedag</td></tr>
+          <tr class="border-t"><td>10/10/2025</td><td>Facultatieve verlofdag</td></tr>
+          <tr class="border-t"><td>27/10 – 2/11/2025</td><td>Herfstvakantie</td></tr>
+          <tr class="border-t"><td>11/11/2025</td><td>Wapenstilstand</td></tr>
+          <tr class="border-t"><td>3/12/2025</td><td>Pedagogische studiedag</td></tr>
+          <tr class="border-t"><td>22/12/2025 – 4/1/2026</td><td>Kerstvakantie</td></tr>
+          <tr class="border-t"><td>16/2 – 22/2/2026</td><td>Krokusvakantie</td></tr>
+          <tr class="border-t"><td>6/4 – 19/4/2026</td><td>Paasvakantie</td></tr>
+          <tr class="border-t"><td>1/5/2026</td><td>Dag van de Arbeid</td></tr>
+          <tr class="border-t"><td>13/5/2026</td><td>Pedagogische studiedag</td></tr>
+          <tr class="border-t"><td>14/5 – 15/5/2026</td><td>Hemelvaart</td></tr>
+          <tr class="border-t"><td>25/5/2026</td><td>Pinkstermaandag</td></tr>
+          <tr class="border-t"><td>1/6/2026</td><td>Facultatieve verlofdag</td></tr>
+          <tr class="border-t"><td>1/7 – 31/8/2026</td><td>Zomervakantie</td></tr>
         </tbody>
       </table>
     </div>
