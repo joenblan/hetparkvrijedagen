@@ -4,19 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vrije dagen BS Het Park</title>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- General Sans font -->
   <link href="https://fonts.googleapis.com/css2?family=General+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'General Sans', sans-serif; margin: 0; }
-    html, body { height: 100%; overflow: hidden; }
-    header { padding: 0.6rem 0; }
-    header img { height: 75px; }
-    h1 { font-size: 3rem; margin-bottom: 0.75rem; }
-    table td, table th { padding: 0.45rem 0.7rem; font-size: 0.9rem; }
-    table th { background: #f3f4f6; font-weight: 600; }
-    main { height: calc(100vh - 120px); display: flex; flex-direction: column; justify-content: flex-start; }
+    body {
+      font-family: 'General Sans', sans-serif;
+      margin: 0;
+      font-size: clamp(14px, 1.1vw, 20px);
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    header {
+      padding: 1vh 0;
+    }
+
+    header img {
+      height: clamp(50px, 8vh, 100px);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 4rem);
+      margin-bottom: 1vh;
+    }
+
+    table td, table th {
+      padding: 0.6rem 1rem;
+      font-size: clamp(0.8rem, 1vw, 1.2rem);
+    }
+
+    table th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    main {
+      height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .table-wrapper {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -24,10 +66,10 @@
     <img src="logo.svg" alt="School logo">
   </header>
 
-  <main class="max-w-4xl mx-auto px-4">
+  <main class="max-w-5xl mx-auto px-6">
     <h1 class="text-center font-semibold">Vrije dagen</h1>
 
-    <div class="bg-white rounded-xl shadow">
+    <div class="table-wrapper">
       <table class="w-full border-collapse">
         <thead>
           <tr>
@@ -39,7 +81,7 @@
           <tr class="border-t"><td>11/11/25</td><td>Wapenstilstand</td></tr>
           <tr class="border-t"><td>03/12/25</td><td>Pedagogische studiedag</td></tr>
           <tr class="border-t"><td>22/12/25 – 04/01/26</td><td>Kerstvakantie</td></tr>
-          <tr class="border-t"><td>16/02/25 – 22/02/26</td><td>Krokusvakantie</td></tr>
+          <tr class="border-t"><td>16/02/26 – 22/02/26</td><td>Krokusvakantie</td></tr>
           <tr class="border-t"><td>06/04/26 – 19/04/26</td><td>Paasvakantie</td></tr>
           <tr class="border-t"><td>01/05/26</td><td>Dag van de Arbeid</td></tr>
           <tr class="border-t"><td>13/05/26</td><td>Pedagogische studiedag</td></tr>
