@@ -85,25 +85,22 @@ main {
   justify-content: center;
   min-width: 0;
 }
-#hero .aanloop { font-size: 2.8vh; color: var(--gedempt); margin-bottom: 1.5vh; }
-#hero .teller {
-  font-size: 10vh;
-  line-height: 1.02;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--accent, var(--vakantie));
-  margin-bottom: 3vh;
-}
-#hero .teller.kort { font-size: 8.5vh; }
+#hero .aanloop { font-size: 2.8vh; color: var(--gedempt); margin-bottom: 2.5vh; }
 #hero .naam {
-  font-size: 5.2vh;
-  line-height: 1.1;
+  font-size: 6.4vh;
+  line-height: 1.08;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
-#hero .naam.lang { font-size: 4.2vh; }
-#hero .wanneer { font-size: 3.2vh; color: var(--gedempt); margin-top: 1.5vh; }
+#hero .naam.lang { font-size: 5.2vh; }
+#hero .wanneer {
+  font-size: 4.4vh;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--accent, var(--vakantie));
+  margin-top: 2.5vh;
+}
 
 /* ---- rechts: de rest van het schooljaar ---- */
 #daarna { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -245,23 +242,18 @@ function teken() {
   const start = alsDatum(hero.start);
   const eind = alsDatum(hero.eind);
 
-  let aanloop, teller, kortTeller = false;
+  let aanloop;
   if (start <= nu) {
-    const over = dagenTussen(nu, eind) + 1;
     aanloop = "Nu bezig";
-    teller = over === 1 ? "Laatste dag" : "Nog " + over + " dagen";
-    kortTeller = over === 1;
   } else {
     const tot = dagenTussen(nu, start);
-    aanloop = "Eerstvolgende vrije dag";
-    teller = tot === 1 ? "Morgen" : "Nog " + tot + " dagen";
+    aanloop = tot === 1 ? "Morgen" : "Eerstvolgende vrije dag";
   }
 
   let html =
     '<section id="hero" style="--accent:' + kleur + '">' +
       '<p class="aanloop">' + aanloop + '</p>' +
-      '<p class="teller' + (kortTeller ? " kort" : "") + '">' + teller + '</p>' +
-      '<p class="naam' + (hero.naam.length > 28 ? " lang" : "") + '">' +
+      '<p class="naam' + (hero.naam.length > 26 ? " lang" : "") + '">' +
         esc(hero.naam) + '</p>' +
       '<p class="wanneer">' + esc(hero.periode) + '</p>' +
     '</section>';
