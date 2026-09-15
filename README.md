@@ -16,32 +16,14 @@ als die er toevallen in staan. Zo kan er niets dubbel op de pagina komen.
 
 ## Eenmalig instellen
 
-1. **Kalender publiek zetten.** Google Calendar → instellingen van
-   *Gemeenteschool Melle (uitstappen)* → *Toegangsmachtigingen* →
+1. **Kalender publiek zetten.** Google Calendar → instellingen van Kalender → *Toegangsmachtigingen* →
    *Openbaar beschikbaar maken*. Controleer daarna:
-
-   ```
-   curl -sI "https://calendar.google.com/calendar/ical/mellegbs%40gmail.com/public/basic.ics" | head -1
-   ```
-
-   Krijg je een 404, dan staat de kalender niet publiek. Gebruik dan het
-   *geheime adres in iCal-indeling* onderaan diezelfde instellingenpagina en zet
-   dat als repository secret `CALENDAR_ICS_URL`.
 
 2. **Workflow-rechten.** Settings → Actions → General → Workflow permissions →
    *Read and write permissions*. Anders mag de bot niet terugpushen.
 
 3. Zet de bestanden in de repo en push. De eerste run kan je met de knop
    *Run workflow* handmatig starten.
-
-## Lokaal draaien
-
-```bash
-pip install -r requirements.txt
-python scripts/build_vrije_dagen.py
-python scripts/build_vrije_dagen.py --vandaag 2027-03-01   # ander moment testen
-python scripts/build_vrije_dagen.py --ics-file tests/schoolkalender_fixture.ics
-```
 
 ## Knoppen in `scripts/build_vrije_dagen.py`
 
