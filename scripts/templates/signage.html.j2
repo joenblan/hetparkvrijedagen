@@ -4,38 +4,50 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=1920, initial-scale=1">
 <title>Vrije dagen {{ schooljaar }}</title>
+<!-- General Sans is het huislettertype. Laadt die niet, dan valt de pagina
+     terug op Arial, precies zoals de skin van de site zelf doet. -->
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap">
 <style>
-/* Alles is in vh gezet en het scherm is 16:9, dus de pagina schaalt mee met
-   elke resolutie die die verhouding heeft. Ontworpen voor 1920x1080. */
+/* Kleuren komen uit skin-bshetpark.css:
+   color1 = teal (#009886 / #027265 / #004d44 / #55c5b8)
+   color2 = limoen (#a1d683)
+   Op een scherm in de gang leest lichte tekst op diep teal rustiger dan
+   zwart op wit, en het blijft herkenbaar de huisstijl. */
 :root {
-  --achtergrond: #0e1a20;
-  --paneel: #16242c;
-  --lijn: #24363f;
-  --tekst: #f0f5f6;
-  --gedempt: #93a7b1;
-  --vakantie: #57c9ac;
-  --feestdag: #7bb0ef;
-  --studiedag: #edb75a;
-  --facultatief: #edb75a;
-  --vrije-dag: #edb75a;
+  --merk-diep: #004d44;
+  --merk-paneel: #00655a;
+  --merk-teal: #009886;
+  --lijn: rgba(220, 248, 244, 0.18);
+  --tekst: #ffffff;
+  --gedempt: #9ecfc7;
+
+  --vakantie: #a1d683;   /* color2-base */
+  --feestdag: #55c5b8;   /* color1-light */
+  --studiedag: #ffffff;  /* door de school zelf gekozen: sterkste accent */
+  --facultatief: #ffffff;
+  --vrije-dag: #ffffff;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
   width: 100%; height: 100%;
   overflow: hidden;
   cursor: none;
-  background: var(--achtergrond);
+  background: var(--merk-diep);
   color: var(--tekst);
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "General Sans", "GeneralSans", Arial, Helvetica,
+               "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Alles in vh, het scherm is 16:9, dus dit schaalt mee met elke resolutie
+   met die verhouding. Ontworpen voor 1920x1080. */
 #scherm {
   width: 100%; height: 100%;
   display: grid;
-  grid-template-rows: 11vh 1fr 5vh;
+  grid-template-rows: 12vh 1fr 5vh;
   padding: 0 4vh;
-  /* zie pixelShift() onderaan: verschuift traag een paar pixels tegen inbranden */
   will-change: transform;
 }
 
@@ -43,43 +55,58 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 0.2vh solid var(--lijn);
+  gap: 5vh;
+  border-bottom: 0.3vh solid var(--merk-teal);
 }
-header .titel { font-size: 3.4vh; font-weight: 600; letter-spacing: -0.01em; }
-header .vandaag { font-size: 3vh; color: var(--gedempt); font-variant-numeric: tabular-nums; }
+header .merk { font-size: 2.2vh; color: var(--gedempt); margin-bottom: 0.4vh; }
+header .titel { font-size: 3.6vh; font-weight: 600; letter-spacing: -0.015em; }
+header .vandaag {
+  font-size: 3vh;
+  color: var(--gedempt);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 main {
   display: grid;
-  grid-template-columns: 37% 1fr;
+  grid-template-columns: 37% minmax(0, 1fr);
   gap: 5vh;
-  align-items: stretch;
   padding: 5vh 0;
+  min-height: 0;
 }
 
-/* ---- linkerpaneel: de eerstvolgende vrije dag ---- */
+/* ---- links: de eerstvolgende vrije dag ---- */
 #hero {
-  background: var(--paneel);
+  background: var(--merk-paneel);
   border-left: 1vh solid var(--accent, var(--vakantie));
   padding: 5vh 4vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0;
 }
 #hero .aanloop { font-size: 2.8vh; color: var(--gedempt); margin-bottom: 1.5vh; }
 #hero .teller {
-  font-size: 11vh;
-  line-height: 1;
+  font-size: 10vh;
+  line-height: 1.02;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--accent, var(--vakantie));
   margin-bottom: 3vh;
 }
 #hero .teller.kort { font-size: 8.5vh; }
-#hero .naam { font-size: 5.2vh; line-height: 1.1; font-weight: 600; letter-spacing: -0.015em; }
+#hero .naam {
+  font-size: 5.2vh;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
+#hero .naam.lang { font-size: 4.2vh; }
 #hero .wanneer { font-size: 3.2vh; color: var(--gedempt); margin-top: 1.5vh; }
 
-/* ---- rechterkolom: de rest van het schooljaar ---- */
-#daarna { display: flex; flex-direction: column; min-height: 0; }
+/* ---- rechts: de rest van het schooljaar ---- */
+#daarna { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 #daarna h2 {
   font-size: 2.6vh;
   font-weight: 600;
@@ -87,24 +114,42 @@ main {
   padding-bottom: 1.5vh;
   border-bottom: 0.2vh solid var(--lijn);
 }
-#lijst { list-style: none; flex: 1; min-height: 0; overflow: hidden; }
-#lijst li {
+
+/* De datumkolom staat op 'max-content': ze wordt precies zo breed als de
+   langste datum in de lijst ("ma 21 dec - zo 3 jan"). Daardoor kan tekst
+   nooit over de naamkolom heen vallen, hoe lang de datum ook wordt. De li's
+   staan op display:contents zodat beide cellen in hetzelfde raster liggen en
+   alle datums netjes onder elkaar uitkomen. */
+#lijst {
+  list-style: none;
   display: grid;
-  grid-template-columns: 28vh 1fr;
-  gap: 3vh;
-  align-items: baseline;
-  padding: 2vh 0 2vh 2vh;
-  border-bottom: 0.2vh solid var(--lijn);
-  border-left: 0.5vh solid var(--accent);
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-content: start;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
+#lijst li { display: contents; }
 #lijst .datum {
-  font-size: 3.4vh;
+  grid-column: 1;
+  padding: 2vh 3vh 2vh 2vh;
+  border-left: 0.5vh solid var(--accent);
+  border-bottom: 0.2vh solid var(--lijn);
+  font-size: 3.2vh;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-#lijst .naam { font-size: 3.6vh; font-weight: 500; }
-#lijst .noot { font-size: 2.4vh; color: var(--gedempt); }
+#lijst .naam {
+  grid-column: 2;
+  padding: 2vh 0;
+  border-bottom: 0.2vh solid var(--lijn);
+  font-size: 3.4vh;
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#lijst .noot { color: var(--gedempt); font-weight: 400; font-size: 2.6vh; }
 #meer { font-size: 2.6vh; color: var(--gedempt); padding-top: 2vh; }
 
 #leeg {
@@ -129,7 +174,10 @@ footer {
 
 <div id="scherm">
   <header>
-    <div class="titel">Vrije dagen schooljaar {{ schooljaar }}</div>
+    <div>
+      {% if school_naam %}<div class="merk">{{ school_naam }}</div>{% endif %}
+      <div class="titel">Vrije dagen schooljaar {{ schooljaar }}</div>
+    </div>
     <div class="vandaag" id="vandaag"></div>
   </header>
 
@@ -184,8 +232,7 @@ function teken() {
   const inhoud = document.getElementById("inhoud");
 
   if (komend.length === 0) {
-    inhoud.innerHTML =
-      '<p id="leeg">Geen vrije dagen meer dit schooljaar.</p>';
+    inhoud.innerHTML = '<p id="leeg">Geen vrije dagen meer dit schooljaar.</p>';
     return;
   }
 
@@ -207,15 +254,15 @@ function teken() {
   } else {
     const tot = dagenTussen(nu, start);
     aanloop = "Eerstvolgende vrije dag";
-    if (tot === 1) { teller = "Morgen"; }
-    else { teller = "Over " + tot + " dagen"; }
+    teller = tot === 1 ? "Morgen" : "Nog " + tot + " dagen";
   }
 
   let html =
     '<section id="hero" style="--accent:' + kleur + '">' +
       '<p class="aanloop">' + aanloop + '</p>' +
       '<p class="teller' + (kortTeller ? " kort" : "") + '">' + teller + '</p>' +
-      '<p class="naam">' + esc(hero.naam) + '</p>' +
+      '<p class="naam' + (hero.naam.length > 28 ? " lang" : "") + '">' +
+        esc(hero.naam) + '</p>' +
       '<p class="wanneer">' + esc(hero.periode) + '</p>' +
     '</section>';
 
@@ -226,7 +273,8 @@ function teken() {
       '<li style="--accent:' + c + '">' +
         '<span class="datum">' + esc(i.kort) + '</span>' +
         '<span class="naam">' + esc(i.naam) +
-          (i.enkel_weekend ? '<span class="noot"> \u00b7 valt in het weekend</span>' : '') +
+          (i.enkel_weekend
+            ? '<span class="noot"> \u00b7 valt in het weekend</span>' : '') +
         '</span>' +
       '</li>';
   });
