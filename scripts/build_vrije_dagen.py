@@ -46,6 +46,9 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 CACHE_FILE = ROOT / "data" / "schoolvakanties-cache.json"
 
+# Staat linksboven op het scherm. Leeg laten = niet tonen.
+SCHOOL_NAAM = "Basisschool Het Park"
+
 # De zomervakantie begint op 1 juli en valt dus strikt genomen net buiten het
 # schooljaar-venster. Zet op False als je ze niet op de pagina wil.
 INCLUDE_ZOMERVAKANTIE = True
@@ -554,6 +557,7 @@ def render(items: list[VrijeDag], sj: Schooljaar, vandaag: dt.date,
     )
     html = env.get_template("signage.html.j2").render(
         schooljaar=sj.label,
+        school_naam=SCHOOL_NAAM,
         bijgewerkt_op=nl_datum(vandaag, met_weekdag=False),
         bijgewerkt_iso=vandaag.isoformat(),
         # "<" wegschrijven als escape zodat een kalendertitel het
