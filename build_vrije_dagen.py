@@ -446,6 +446,9 @@ def render(items: list[VrijeDag], sj: Schooljaar, vandaag: dt.date,
     }
 
     outdir.mkdir(parents=True, exist_ok=True)
+    # Zonder dit bestand duwt GitHub Pages alles door Jekyll, wat hier niets
+    # toevoegt en de deploy alleen trager maakt.
+    (outdir / ".nojekyll").write_text("", encoding="utf-8")
     (outdir / "vrije-dagen.json").write_text(
         json.dumps(
             {"schooljaar": sj.label, "bijgewerkt_op": vandaag.isoformat(),
@@ -462,7 +465,7 @@ def render(items: list[VrijeDag], sj: Schooljaar, vandaag: dt.date,
         lstrip_blocks=True,
     )
     html = env.get_template("vrije-dagen.html.j2").render(**context)
-    (outdir / "vrije-dagen.html").write_text(html, encoding="utf-8")
+    (outdir / "index.html").write_text(html, encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -478,7 +481,8 @@ def main() -> int:
                    default=os.environ.get("CALENDAR_ICS_URL") or DEFAULT_ICS_URL)
     p.add_argument("--ics-file", help="lokaal .ics-bestand i.p.v. downloaden")
     p.add_argument("--html-file", help="lokale kopie van de vlaanderen.be-pagina")
-    p.add_argument("--outdir", default=str(ROOT / "public"))
+    # GitHub Pages serveert alleen vanuit de repo-root of vanuit /docs.
+    p.add_argument("--outdir", default=str(ROOT / "docs"))
     p.add_argument("--no-cache-write", action="store_true")
     args = p.parse_args()
 
