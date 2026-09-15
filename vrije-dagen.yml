@@ -1,0 +1,54 @@
+name: Vrije dagen bijwerken
+
+on:
+  schedule:
+    # Elke nacht om 03:17 UTC. GitHub draait cron in UTC en kan een kwartier
+    # later starten; dat maakt voor deze pagina niet uit.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "requirements.txt"
+      - ".github/workflows/vrije-dagen.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vrije-dagen
+  cancel-in-progress: false
+
+jobs:
+  bouwen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Pagina genereren
+        env:
+          # Optioneel. Laat leeg als de kalender publiek staat; vul het geheime
+          # ICS-adres in als je de kalender niet openbaar wil maken.
+          CALENDAR_ICS_URL: ${{ secrets.CALENDAR_ICS_URL }}
+        run: python scripts/build_vrije_dagen.py
+
+      - name: Wijzigingen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/vrije-dagen.html public/vrije-dagen.json data/schoolvakanties-cache.json
+          if git diff --staged --quiet; then
+            echo "Niets gewijzigd."
+          else
+            git commit -m "Vrije dagen bijgewerkt ($(date -u +%F))"
+            git push
+          fi

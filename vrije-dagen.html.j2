@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vrije dagen {{ schooljaar }} — Gemeenteschool Melle</title>
+<meta name="description" content="Alle vakanties, feestdagen, pedagogische studiedagen en facultatieve verlofdagen van schooljaar {{ schooljaar }}.">
+<style>
+:root {
+  --inkt: #17262e;
+  --inkt-zacht: #5d6f78;
+  --papier: #ffffff;
+  --raster: #e3e8ea;
+  --vakantie: #0f6b5c;
+  --feestdag: #2b5d94;
+  --school: #8a5a12;
+  --markering: #f2f7f5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--inkt);
+  font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.vrije-dagen { max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+
+h1 { font-size: 1.9rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 .4rem; }
+.periode { color: var(--inkt-zacht); margin: 0 0 2.5rem; }
+
+.nu {
+  border: 1px solid var(--raster);
+  border-left: 4px solid var(--vakantie);
+  background: var(--markering);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 2.5rem;
+}
+.nu p { margin: 0; }
+.nu .kop { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
+.nu .detail { color: var(--inkt-zacht); font-size: .95rem; margin-top: .2rem; }
+
+h2 {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--inkt-zacht);
+  margin: 2.5rem 0 .75rem;
+  padding-bottom: .4rem;
+  border-bottom: 1px solid var(--raster);
+}
+
+ol.lijst { list-style: none; margin: 0; padding: 0; }
+ol.lijst li {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .15rem;
+  padding: .9rem 0 .9rem 1rem;
+  border-bottom: 1px solid var(--raster);
+  border-left: 3px solid transparent;
+}
+@media (min-width: 34rem) {
+  ol.lijst li { grid-template-columns: 15.5rem 1fr; gap: 1rem; align-items: baseline; }
+}
+li.vakantie { border-left-color: var(--vakantie); }
+li.feestdag { border-left-color: var(--feestdag); }
+li.studiedag, li.facultatief, li.vrije-dag { border-left-color: var(--school); }
+
+.datum { color: var(--inkt-zacht); font-variant-numeric: tabular-nums; font-size: .95rem; }
+.naam { font-weight: 600; }
+.soort { display: block; font-weight: 400; color: var(--inkt-zacht); font-size: .9rem; }
+.noot { display: block; color: var(--inkt-zacht); font-size: .9rem; font-style: italic; }
+
+li.voorbij { opacity: .45; }
+li.loopt-nu { background: var(--markering); }
+li.loopt-nu .naam::after {
+  content: "nu bezig";
+  font-weight: 400;
+  font-size: .8rem;
+  color: var(--vakantie);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: .05rem .45rem;
+  margin-left: .5rem;
+  white-space: nowrap;
+}
+
+.voetnoot { margin-top: 3rem; font-size: .9rem; color: var(--inkt-zacht); }
+.voetnoot a { color: inherit; }
+.leeg { padding: 1.5rem 0; color: var(--inkt-zacht); }
+
+@media print {
+  .vrije-dagen { padding: 0; max-width: none; }
+  .nu { display: none; }
+  li.voorbij { opacity: 1; }
+  ol.lijst li { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== vanaf hier is het fragment dat je in je eigen layout kan plakken ===== -->
+<main class="vrije-dagen">
+
+  <h1>Vrije dagen schooljaar {{ schooljaar }}</h1>
+  <p class="periode">Van {{ eerste_dag }} tot en met {{ laatste_dag }}.</p>
+
+  {% if loopt_nu %}
+  <div class="nu">
+    <p class="kop">{{ loopt_nu.naam }} is bezig</p>
+    <p class="detail">{{ loopt_nu.periode }}{% if loopt_nu.dagen > 1 %} · {{ loopt_nu.dagen }} dagen{% endif %}</p>
+  </div>
+  {% elif volgende %}
+  <div class="nu">
+    <p class="kop">Volgende vrije dag: {{ volgende.naam }}</p>
+    <p class="detail">{{ volgende.periode }}{% if volgende.dagen > 1 %} · {{ volgende.dagen }} dagen{% endif %}</p>
+  </div>
+  {% endif %}
+
+  {% if items %}
+  <h2>Volledig overzicht</h2>
+  <ol class="lijst">
+    {% for item in items %}
+    <li class="{{ item.categorie }}{% if item.voorbij %} voorbij{% endif %}{% if item.loopt_nu %} loopt-nu{% endif %}">
+      <span class="datum">{{ item.periode }}</span>
+      <span class="naam">{{ item.naam }}
+        {% if item.categorie_label|lower not in item.naam|lower %}
+        <span class="soort">{{ item.categorie_label }}</span>
+        {% endif %}
+        {% if item.enkel_weekend %}
+        <span class="noot">Valt in het weekend, dus geen extra vrije dag.</span>
+        {% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="leeg">Er staan nog geen vrije dagen klaar voor dit schooljaar.</p>
+  {% endif %}
+
+  <p class="voetnoot">
+    Vakanties en wettelijke feestdagen komen van
+    <a href="https://www.vlaanderen.be/onderwijs-en-vorming/wat-mag-en-moet-op-school/schoolvakanties-vrije-dagen-en-afwezigheden/schoolvakanties">Onderwijs Vlaanderen</a>.
+    Pedagogische studiedagen en facultatieve verlofdagen komen uit de schoolkalender.
+    Bijgewerkt op <time datetime="{{ bijgewerkt_iso }}">{{ bijgewerkt_op }}</time>.
+  </p>
+
+</main>
+<!-- ===== einde fragment ===== -->
+
+</body>
+</html>
