@@ -4,6 +4,11 @@ Genereert elke nacht `docs/index.html` en `docs/vrije-dagen.json` met alle vrije
 dagen van het lopende schooljaar (1 september t.e.m. 30 juni), en publiceert die
 via GitHub Pages.
 
+`docs/index.html` is een schermpagina voor digital signage: 1920x1080 liggend,
+donkere achtergrond, leesbaar vanaf een meter of vier. Links de eerstvolgende
+vrije dag met een aftelling, rechts wat er daarna komt. Dagen die al voorbij
+zijn verdwijnen vanzelf.
+
 ## Bronnen
 
 | Wat | Waar vandaan |
@@ -53,6 +58,42 @@ python scripts/build_vrije_dagen.py --ics-file tests/schoolkalender_fixture.ics
 - `CLASSIFICATIE` — de regexes die bepalen welke kalenderitems meetellen.
   Alles wat niet matcht (uitstappen, zwemmen, oudercontacten) wordt genegeerd.
 
+## Het scherm
+
+De pagina rekent zelf uit wat er getoond moet worden, elke minuut opnieuw, op
+basis van de data die in de HTML is meegebakken. Ze blijft dus kloppen als de
+nachtelijke build een paar dagen niet gedraaid heeft, en ze rolt om middernacht
+vanzelf door zonder herladen. Elk half uur haalt ze zichzelf opnieuw op om een
+nieuwe build binnen te halen.
+
+**De klok van het afspeelapparaat moet juist staan**, inclusief tijdzone
+Europe/Brussels. Alle datumlogica gebeurt in de browser.
+
+Knoppen bovenaan het `<script>`-blok in `scripts/templates/signage.html.j2`:
+
+- `MAX_REGELS` (7) - aantal regels rechts. Meer past niet leesbaar op 1080p.
+- `HERLAAD_MS` (30 min) - hoe vaak de pagina zichzelf opnieuw ophaalt.
+- `SCHUIF` - verschuift het beeld elke 5 minuten een paar pixels tegen
+  inbranden. Zet de interval hoger als het stoort.
+
+Feestdagen die volledig in het weekend vallen (1 mei 2027 is een zaterdag)
+komen nooit groot in beeld, maar staan wel in de lijst met de vermelding
+"valt in het weekend".
+
+### Kiosk opstarten
+
+Raspberry Pi of mini-pc met Chromium:
+
+```bash
+xset s off -dpms                      # scherm niet laten uitvallen
+chromium-browser --kiosk --incognito --noerrdialogs --disable-infobars \
+  --check-for-update-interval=31536000 \
+  "https://<gebruiker>.github.io/<repo>/"
+```
+
+Een Samsung- of LG-scherm met ingebouwde browser: gebruik de URL launcher en
+zet dezelfde link erin.
+
 ## GitHub Pages
 
 Settings → Pages → Source: *Deploy from a branch* → branch `main`, map `/docs`.
@@ -61,9 +102,9 @@ De pagina staat daarna op `https://<gebruiker>.github.io/<repo>/`.
 GitHub Pages serveert alleen vanuit de repo-root of vanuit `/docs`; `/public`
 werkt niet. Daarom schrijft het script naar `docs/`.
 
-Wil je de lijst later in een andere site tonen: `docs/vrije-dagen.json` is
-dezelfde data in JSON, en in `docs/index.html` staat het herbruikbare stuk tussen
-de commentaren `vanaf hier is het fragment` en `einde fragment`.
+Wil je de lijst later ook op de gewone schoolsite tonen: `docs/vrije-dagen.json`
+bevat dezelfde data, inclusief kant-en-klare Nederlandse datumteksten
+(`periode`, `kort`) en een `enkel_weekend`-vlag.
 
 ## Als vlaanderen.be verandert
 

@@ -89,6 +89,24 @@ def nl_periode(start: dt.date, eind: dt.date) -> str:
     return f"{nl_datum(start)} t.e.m. {nl_datum(eind)}"
 
 
+WEEKDAG_KORT = ["ma", "di", "wo", "do", "vr", "za", "zo"]
+MAAND_KORT = {1: "jan", 2: "feb", 3: "mrt", 4: "apr", 5: "mei", 6: "jun",
+              7: "jul", 8: "aug", 9: "sep", 10: "okt", 11: "nov", 12: "dec"}
+
+
+def nl_kort(start: dt.date, eind: dt.date) -> str:
+    """Compacte notatie voor het schermoverzicht: 'ma 2 - zo 8 nov'."""
+    def stuk(d: dt.date, met_maand: bool = True) -> str:
+        kern = f"{WEEKDAG_KORT[d.weekday()]} {d.day}"
+        return f"{kern} {MAAND_KORT[d.month]}" if met_maand else kern
+
+    if start == eind:
+        return stuk(start)
+    if start.month == eind.month and start.year == eind.year:
+        return f"{stuk(start, False)} \u2013 {stuk(eind)}"
+    return f"{stuk(start)} \u2013 {stuk(eind)}"
+
+
 def slugify(text: str) -> str:
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
@@ -168,6 +186,7 @@ class VrijeDag:
         d["dagen"] = self.dagen
         d["categorie_label"] = CATEGORIE_LABEL[self.categorie]
         d["periode"] = nl_periode(self.start, self.eind)
+        d["kort"] = nl_kort(self.start, self.eind)
         d["enkel_weekend"] = self.enkel_weekend
         d["id"] = slugify(f"{self.naam}-{self.start.isoformat()}")
         return d
@@ -422,39 +441,23 @@ def lees_cache(sj: Schooljaar) -> list[VrijeDag]:
 
 def render(items: list[VrijeDag], sj: Schooljaar, vandaag: dt.date,
            outdir: Path) -> None:
-    rijen = []
-    for item in items:
-        rij = item.to_dict()
-        rij["voorbij"] = item.eind < vandaag
-        rij["loopt_nu"] = item.start <= vandaag <= item.eind
-        rijen.append(rij)
+    """Schrijft de schermpagina plus dezelfde data als JSON.
 
-    volgende = next((r for r in rijen
-                     if not r["voorbij"] and not r["loopt_nu"]), None)
-    nu = next((r for r in rijen if r["loopt_nu"]), None)
-
-    context = {
-        "schooljaar": sj.label,
-        "eerste_dag": nl_datum(sj.eerste_dag),
-        "laatste_dag": nl_datum(sj.laatste_dag),
-        "items": rijen,
-        "volgende": volgende,
-        "loopt_nu": nu,
-        "bijgewerkt_op": nl_datum(vandaag, met_weekdag=False),
-        "bijgewerkt_iso": vandaag.isoformat(),
-        "categorie_label": CATEGORIE_LABEL,
-    }
+    De pagina krijgt *alle* vrije dagen van het schooljaar mee. Welke daarvan
+    op het scherm komen bepaalt de browser zelf, elke minuut opnieuw. Zo klopt
+    het scherm ook als de build een paar dagen niet gedraaid heeft.
+    """
+    rijen = [item.to_dict() for item in items]
 
     outdir.mkdir(parents=True, exist_ok=True)
     # Zonder dit bestand duwt GitHub Pages alles door Jekyll, wat hier niets
     # toevoegt en de deploy alleen trager maakt.
     (outdir / ".nojekyll").write_text("", encoding="utf-8")
+
+    payload = {"schooljaar": sj.label, "bijgewerkt_op": vandaag.isoformat(),
+               "items": rijen}
     (outdir / "vrije-dagen.json").write_text(
-        json.dumps(
-            {"schooljaar": sj.label, "bijgewerkt_op": vandaag.isoformat(),
-             "items": rijen},
-            indent=2, ensure_ascii=False,
-        ) + "\n",
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
@@ -464,7 +467,14 @@ def render(items: list[VrijeDag], sj: Schooljaar, vandaag: dt.date,
         trim_blocks=True,
         lstrip_blocks=True,
     )
-    html = env.get_template("vrije-dagen.html.j2").render(**context)
+    html = env.get_template("signage.html.j2").render(
+        schooljaar=sj.label,
+        bijgewerkt_op=nl_datum(vandaag, met_weekdag=False),
+        bijgewerkt_iso=vandaag.isoformat(),
+        # "<" wegschrijven als escape zodat een kalendertitel het
+        # <script>-blok niet kan afsluiten.
+        data_json=json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c"),
+    )
     (outdir / "index.html").write_text(html, encoding="utf-8")
 
 

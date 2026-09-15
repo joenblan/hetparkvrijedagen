@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1920, initial-scale=1">
-<title>Vrije dagen 2026-2027</title>
+<title>Vrije dagen {{ schooljaar }}</title>
 <style>
 /* Alles is in vh gezet en het scherm is 16:9, dus de pagina schaalt mee met
    elke resolutie die die verhouding heeft. Ontworpen voor 1920x1080. */
@@ -129,17 +129,17 @@ footer {
 
 <div id="scherm">
   <header>
-    <div class="titel">Vrije dagen schooljaar 2026-2027</div>
+    <div class="titel">Vrije dagen schooljaar {{ schooljaar }}</div>
     <div class="vandaag" id="vandaag"></div>
   </header>
 
   <main id="inhoud"></main>
 
-  <footer>Kalender bijgewerkt op 15 september 2026</footer>
+  <footer>Kalender bijgewerkt op {{ bijgewerkt_op }}</footer>
 </div>
 
 <script>
-const DATA = {"schooljaar": "2026-2027", "bijgewerkt_op": "2026-09-15", "items": [{"naam": "Pedagogische studiedag", "start": "2026-10-14", "eind": "2026-10-14", "categorie": "studiedag", "bron": "schoolkalender", "omschrijving": "Geen school voor de leerlingen.", "tags": [], "dagen": 1, "categorie_label": "Pedagogische studiedag", "periode": "woensdag 14 oktober 2026", "kort": "wo 14 okt", "enkel_weekend": false, "id": "pedagogische-studiedag-2026-10-14"}, {"naam": "Herfstvakantie", "start": "2026-11-02", "eind": "2026-11-08", "categorie": "vakantie", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 7, "categorie_label": "Vakantie", "periode": "maandag 2 t.e.m. zondag 8 november 2026", "kort": "ma 2 – zo 8 nov", "enkel_weekend": false, "id": "herfstvakantie-2026-11-02"}, {"naam": "Facultatieve verlofdag", "start": "2026-11-09", "eind": "2026-11-10", "categorie": "facultatief", "bron": "schoolkalender", "omschrijving": "", "tags": [], "dagen": 2, "categorie_label": "Facultatieve verlofdag", "periode": "maandag 9 t.e.m. dinsdag 10 november 2026", "kort": "ma 9 – di 10 nov", "enkel_weekend": false, "id": "facultatieve-verlofdag-2026-11-09"}, {"naam": "Wapenstilstand", "start": "2026-11-11", "eind": "2026-11-11", "categorie": "feestdag", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 1, "categorie_label": "Wettelijke feestdag", "periode": "woensdag 11 november 2026", "kort": "wo 11 nov", "enkel_weekend": false, "id": "wapenstilstand-2026-11-11"}, {"naam": "Kerstvakantie", "start": "2026-12-21", "eind": "2027-01-03", "categorie": "vakantie", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 14, "categorie_label": "Vakantie", "periode": "maandag 21 december 2026 t.e.m. zondag 3 januari 2027", "kort": "ma 21 dec – zo 3 jan", "enkel_weekend": false, "id": "kerstvakantie-2026-12-21"}, {"naam": "Ped. studiedag", "start": "2027-02-05", "eind": "2027-02-05", "categorie": "studiedag", "bron": "schoolkalender", "omschrijving": "", "tags": [], "dagen": 1, "categorie_label": "Pedagogische studiedag", "periode": "vrijdag 5 februari 2027", "kort": "vr 5 feb", "enkel_weekend": false, "id": "ped-studiedag-2027-02-05"}, {"naam": "Krokusvakantie", "start": "2027-02-08", "eind": "2027-02-14", "categorie": "vakantie", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 7, "categorie_label": "Vakantie", "periode": "maandag 8 t.e.m. zondag 14 februari 2027", "kort": "ma 8 – zo 14 feb", "enkel_weekend": false, "id": "krokusvakantie-2027-02-08"}, {"naam": "Brugdag - geen school", "start": "2027-03-12", "eind": "2027-03-12", "categorie": "vrije-dag", "bron": "schoolkalender", "omschrijving": "", "tags": [], "dagen": 1, "categorie_label": "Vrije dag", "periode": "vrijdag 12 maart 2027", "kort": "vr 12 mrt", "enkel_weekend": false, "id": "brugdag-geen-school-2027-03-12"}, {"naam": "Paasvakantie", "start": "2027-03-29", "eind": "2027-04-11", "categorie": "vakantie", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 14, "categorie_label": "Vakantie", "periode": "maandag 29 maart 2027 t.e.m. zondag 11 april 2027", "kort": "ma 29 mrt – zo 11 apr", "enkel_weekend": false, "id": "paasvakantie-2027-03-29"}, {"naam": "Dag van de Arbeid", "start": "2027-05-01", "eind": "2027-05-01", "categorie": "feestdag", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 1, "categorie_label": "Wettelijke feestdag", "periode": "zaterdag 1 mei 2027", "kort": "za 1 mei", "enkel_weekend": true, "id": "dag-van-de-arbeid-2027-05-01"}, {"naam": "Hemelvaart", "start": "2027-05-06", "eind": "2027-05-07", "categorie": "feestdag", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 2, "categorie_label": "Wettelijke feestdag", "periode": "donderdag 6 t.e.m. vrijdag 7 mei 2027", "kort": "do 6 – vr 7 mei", "enkel_weekend": false, "id": "hemelvaart-2027-05-06"}, {"naam": "Pinkstermaandag", "start": "2027-05-17", "eind": "2027-05-17", "categorie": "feestdag", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 1, "categorie_label": "Wettelijke feestdag", "periode": "maandag 17 mei 2027", "kort": "ma 17 mei", "enkel_weekend": false, "id": "pinkstermaandag-2027-05-17"}, {"naam": "Zomervakantie", "start": "2027-07-01", "eind": "2027-08-31", "categorie": "vakantie", "bron": "vlaanderen.be", "omschrijving": "", "tags": [], "dagen": 62, "categorie_label": "Vakantie", "periode": "donderdag 1 juli 2027 t.e.m. dinsdag 31 augustus 2027", "kort": "do 1 jul – di 31 aug", "enkel_weekend": false, "id": "zomervakantie-2027-07-01"}]};
+const DATA = {{ data_json | safe }};
 
 // Hoeveel regels er rechts passen. Meer dan 7 wordt op 1080 te krap.
 const MAX_REGELS = 7;
