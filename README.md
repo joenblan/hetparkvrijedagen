@@ -47,7 +47,13 @@ pip install -r requirements.txt
 python scripts/build_vrije_dagen.py
 python scripts/build_vrije_dagen.py --vandaag 2027-03-01   # ander moment testen
 python scripts/build_vrije_dagen.py --ics-file tests/schoolkalender_fixture.ics
+python scripts/build_vrije_dagen.py --dump          # wat zit er echt in de feed?
 ```
+
+`--dump` toont de kalendernaam, de ruwe DTSTART/DTEND-waarden zoals Google ze
+levert, en daarna elk uitgeklapt item met de categorie die de classificatie
+eraan hangt (`-` betekent: genegeerd). Dat is de snelste manier om te zien of
+een verkeerde datum uit de feed komt of uit de verwerking.
 
 ## Knoppen in `scripts/build_vrije_dagen.py`
 

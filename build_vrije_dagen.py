@@ -20,6 +20,7 @@ import sys
 import unicodedata
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
@@ -37,7 +38,8 @@ VLAANDEREN_URL = (
 # Publieke ICS-feed van de schoolkalender. Zet CALENDAR_ICS_URL als env var om
 # een geheim adres ("private address") te gebruiken.
 DEFAULT_ICS_URL = (
-    "https://calendar.google.com/calendar/ical/mellegbs%40gmail.com/public/basic.ics"
+    "https://calendar.google.com/calendar/ical/"
+    "mellegbs%40gmail.com/public/basic.ics"
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -51,6 +53,8 @@ INCLUDE_ZOMERVAKANTIE = True
 # Vanaf welke maand er naar het volgende schooljaar gerold wordt. 7 = vanaf
 # 1 juli toont de pagina het schooljaar dat in september begint.
 ROLLOVER_MONTH = 7
+
+TZ = ZoneInfo("Europe/Brussels")
 
 TIMEOUT = 30
 USER_AGENT = "vrije-dagen-bot/1.0 (+github actions; static site build)"
@@ -300,7 +304,15 @@ def classificeer(summary: str) -> str | None:
 
 
 def _naar_date(waarde) -> dt.date:
-    return waarde.date() if isinstance(waarde, dt.datetime) else waarde
+    """Google exporteert tijdstippen in UTC. Zonder omrekening naar
+    Europe/Brussels valt een avondevenement een dag te vroeg: 14 oktober
+    20:00 lokaal staat in de feed als 18:00Z, en in de winter kan een
+    ochtendafspraak van 00:30 zelfs op 23:30Z de dag ervoor uitkomen."""
+    if isinstance(waarde, dt.datetime):
+        if waarde.tzinfo is not None:
+            waarde = waarde.astimezone(TZ)
+        return waarde.date()
+    return waarde
 
 
 def parse_ics(ics_tekst: str, sj: Schooljaar) -> list[VrijeDag]:
@@ -323,8 +335,15 @@ def parse_ics(ics_tekst: str, sj: Schooljaar) -> list[VrijeDag]:
         if "DTEND" in ev:
             rauw_eind = ev["DTEND"].dt
             eind = _naar_date(rauw_eind)
-            # Bij hele-dag-events is DTEND exclusief.
-            if not isinstance(rauw_eind, dt.datetime):
+            if isinstance(rauw_eind, dt.datetime):
+                # Een afspraak die om middernacht eindigt hoort bij de dag
+                # ervoor, niet bij de nieuwe dag.
+                lokaal = (rauw_eind.astimezone(TZ) if rauw_eind.tzinfo
+                          else rauw_eind)
+                if lokaal.hour == 0 and lokaal.minute == 0 and eind > start:
+                    eind -= dt.timedelta(days=1)
+            else:
+                # Bij hele-dag-events is DTEND exclusief.
                 eind -= dt.timedelta(days=1)
             if eind < start:
                 eind = start
@@ -340,6 +359,73 @@ def parse_ics(ics_tekst: str, sj: Schooljaar) -> list[VrijeDag]:
             omschrijving=str(ev.get("DESCRIPTION", "")).strip()[:300],
         ))
     return items
+
+
+def _rauwe_blokken(ics_tekst: str, rond: dt.date) -> list[str]:
+    """Geeft de letterlijke VEVENT-blokken terug die een datum in de buurt van
+    `rond` noemen. Zoekt op YYYYMMDD, want Google schrijft een avondafspraak
+    weg als de dag ervoor in UTC."""
+    # Gevouwen regels (die met een spatie beginnen) eerst weer samenvoegen.
+    plat = ics_tekst.replace("\r\n", "\n").replace("\n ", "").replace("\n\t", "")
+    stempels = {(rond + dt.timedelta(days=n)).strftime("%Y%m%d")
+                for n in (-1, 0, 1)}
+    blokken = []
+    for stuk in plat.split("BEGIN:VEVENT")[1:]:
+        blok = "BEGIN:VEVENT" + stuk.split("END:VEVENT")[0] + "END:VEVENT"
+        datumregels = [r for r in blok.splitlines()
+                       if r.startswith(("DTSTART", "DTEND", "RECURRENCE-ID"))]
+        if any(s in r for r in datumregels for s in stempels):
+            blokken.append(blok)
+    return blokken
+
+
+def dump_ics(ics_tekst: str, sj: Schooljaar,
+             rond: dt.date | None = None) -> None:
+    """Laat zien wat er echt in de feed staat, zonder filteren of classificeren."""
+    import icalendar
+    import recurring_ical_events
+
+    if rond is not None:
+        blokken = _rauwe_blokken(ics_tekst, rond)
+        print(f"Ruwe VEVENT-blokken die {rond} of een buurdag noemen: "
+              f"{len(blokken)}")
+        for blok in blokken:
+            print("-" * 60)
+            for regel in blok.splitlines():
+                if regel.startswith(("BEGIN", "END", "DTSTART", "DTEND",
+                                     "SUMMARY", "RRULE", "RECURRENCE-ID",
+                                     "EXDATE", "TRANSP", "STATUS")):
+                    print("  " + regel)
+        if not blokken:
+            print("  Niets gevonden. De afspraak staat niet in deze feed, of "
+                  "staat op een andere kalender.")
+        print("-" * 60 + "\n")
+
+    kalender = icalendar.Calendar.from_ical(ics_tekst)
+    print(f"Kalendernaam : {kalender.get('X-WR-CALNAME')}")
+    print(f"Tijdzone     : {kalender.get('X-WR-TIMEZONE')}")
+
+    rauw = [c for c in kalender.walk("VEVENT")]
+    print(f"\nRuwe VEVENTs in het bestand: {len(rauw)}")
+    for ev in rauw[:15]:
+        ds = ev.get("DTSTART")
+        de = ev.get("DTEND")
+        print(f"  DTSTART={ds.to_ical().decode() if ds else '-':<28}"
+              f"DTEND={de.to_ical().decode() if de else '-':<28}"
+              f"{str(ev.get('SUMMARY', ''))[:45]}")
+    if len(rauw) > 15:
+        print(f"  ... en nog {len(rauw) - 15}")
+
+    events = recurring_ical_events.of(kalender).between(
+        sj.eerste_dag, sj.laatste_dag + dt.timedelta(days=1))
+    print(f"\nUitgeklapt binnen {sj.eerste_dag} t.e.m. {sj.laatste_dag}: "
+          f"{len(events)}")
+    for ev in sorted(events, key=lambda e: str(e["DTSTART"].dt)):
+        start = _naar_date(ev["DTSTART"].dt)
+        heledag = not isinstance(ev["DTSTART"].dt, dt.datetime)
+        categorie = classificeer(str(ev.get("SUMMARY", ""))) or "-"
+        print(f"  {start}  {'heledag' if heledag else 'met uur':<8} "
+              f"{categorie:<12} {str(ev.get('SUMMARY', ''))[:50]}")
 
 
 def haal_kalender(url: str) -> list[VrijeDag] | None:
@@ -493,12 +579,24 @@ def main() -> int:
     # GitHub Pages serveert alleen vanuit de repo-root of vanuit /docs.
     p.add_argument("--outdir", default=str(ROOT / "docs"))
     p.add_argument("--no-cache-write", action="store_true")
+    p.add_argument("--dump", action="store_true",
+                   help="toon de ruwe kalenderinhoud en stop")
+    p.add_argument("--rond", metavar="ISO-DATUM",
+                   help="bij --dump: toon de letterlijke VEVENT-blokken rond "
+                        "deze datum")
     args = p.parse_args()
 
     vandaag = (dt.date.fromisoformat(args.vandaag) if args.vandaag
                else dt.date.today())
     sj = huidig_schooljaar(vandaag)
     print(f"Schooljaar {sj.label} ({sj.eerste_dag} t.e.m. {sj.laatste_dag})")
+
+    if args.dump:
+        ics = (Path(args.ics_file).read_text(encoding="utf-8") if args.ics_file
+               else haal_kalender(args.ics_url))
+        dump_ics(ics, sj,
+                 dt.date.fromisoformat(args.rond) if args.rond else None)
+        return 0
 
     # Overheid
     try:
