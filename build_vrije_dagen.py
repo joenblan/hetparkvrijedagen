@@ -37,8 +37,7 @@ VLAANDEREN_URL = (
 # Publieke ICS-feed van de schoolkalender. Zet CALENDAR_ICS_URL als env var om
 # een geheim adres ("private address") te gebruiken.
 DEFAULT_ICS_URL = (
-    "https://calendar.google.com/calendar/ical/"
-    "mellegbs%40gmail.com/public/basic.ics"
+    "https://calendar.google.com/calendar/ical/mellegbs%40gmail.com/public/basic.ics"
 )
 
 ROOT = Path(__file__).resolve().parent.parent
